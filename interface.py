@@ -41,12 +41,15 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.sidebar_frame = ctk.CTkFrame(self, width=220, corner_radius=0)
         ctk.CTkLabel(self.sidebar_frame, text="Organizador Financeiro", font=("Arial", 20, "bold")).pack(pady=(30, 30))
 
-        self.btn_lancamentos = self.criar_botao_sidebar("📝 Lançamentos", lambda: self.mudar_tela("lancamentos"))
-        self.btn_visualizacao = self.criar_botao_sidebar("📊 Visualização", lambda: self.mudar_tela("visualizacao"))
-        self.btn_graficos = self.criar_botao_sidebar("📈 Gráficos", lambda: self.mudar_tela("graficos"))
-        self.btn_comparativo = self.criar_botao_sidebar("⚖️ Comparativo", lambda: self.mudar_tela("comparativo"))
+        self.btn_lancamentos = self.criar_botao_sidebar("Lançamentos", lambda: self.mudar_tela("lancamentos"))
+        self.btn_visualizacao = self.criar_botao_sidebar("Visualização", lambda: self.mudar_tela("visualizacao"))
+        self.btn_graficos = self.criar_botao_sidebar("Gráficos", lambda: self.mudar_tela("graficos"))
+        self.btn_comparativo = self.criar_botao_sidebar("Comparativo", lambda: self.mudar_tela("comparativo"))
 
-        self.btn_config = ctk.CTkButton(self.sidebar_frame, text="⚙️ Configurações", fg_color="transparent", border_width=1, command=self.voltar_tela_inicial)
+        self.btn_config = ctk.CTkButton(self.sidebar_frame, text="⚙️ Configurações", 
+                                        fg_color=("#3B8ED0", "#1F6AA5"), 
+                                        hover_color=("#3279B0", "#185382"), 
+                                        command=self.voltar_tela_inicial)
         self.btn_config.pack(side="bottom", pady=20, padx=20, fill="x")
 
         # CONTEÚDO
@@ -98,7 +101,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.dropdown_categoria = ctk.CTkComboBox(frame, values=self.categorias_opcoes["Gasto"], height=45)
         self.dropdown_categoria.pack(pady=5, fill="x", padx=200)
 
-        ctk.CTkButton(frame, text="💾 Adicionar Registro", height=55, font=("Arial", 18, "bold"), command=self.coletar_dados_formulario).pack(pady=50, fill="x", padx=200)
+        ctk.CTkButton(frame, text="Adicionar Registro", height=55, font=("Arial", 18, "bold"), command=self.coletar_dados_formulario).pack(pady=50, fill="x", padx=200)
 
     def construir_visualizacao(self):
         frame = self.telas["visualizacao"]
