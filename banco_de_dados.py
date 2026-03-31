@@ -28,3 +28,10 @@ def salvar_registro_csv(caminho_csv, data, tipo, categoria, valor):
     
     # Salva anexando (append mode) ao final do arquivo
     df_novo.to_csv(caminho_csv, mode='a', index=False, header=arquivo_vazio)
+
+def ler_registros_csv(caminho_csv):
+    """Lê todos os registros do arquivo CSV e retorna um DataFrame."""
+    if not os.path.exists(caminho_csv) or os.stat(caminho_csv).st_size == 0:
+        return pd.DataFrame(columns=["Data", "Tipo", "Categoria", "Valor"])
+    
+    return pd.read_csv(caminho_csv)
