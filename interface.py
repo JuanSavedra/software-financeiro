@@ -234,7 +234,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.f_ano = ctk.CTkComboBox(self.filter_frame, values=["Todos"] + [str(a) for a in range(2020, 2031)], width=90, height=28, command=lambda _: self.atualizar_tabela())
         self.f_ano.set("Todos"); self.f_ano.grid(row=0, column=3, padx=5, pady=5, sticky="w")
         ctk.CTkLabel(self.filter_frame, text="Tipo:", font=("Arial", 11, "bold")).grid(row=0, column=4, padx=5, pady=5, sticky="e")
-        self.f_tipo = ctk.CTkComboBox(self.filter_frame, values=["Todos", "Gasto", "Ganho", "Investimento"], width=110, height=28, command=lambda _: self.atualizar_tabela())
+        self.f_tipo = ctk.CTkComboBox(self.filter_frame, values=["Todos", "Gasto", "Ganho", "Investimento"], width=110, height=28, command=self.atualizar_categorias_filtro)
         self.f_tipo.set("Todos"); self.f_tipo.grid(row=0, column=5, padx=5, pady=5, sticky="w")
         ctk.CTkLabel(self.filter_frame, text="Categoria:", font=("Arial", 11, "bold")).grid(row=0, column=6, padx=5, pady=5, sticky="e")
         self.f_cat = ctk.CTkComboBox(self.filter_frame, values=["Todos"] + self.todas_categorias, width=140, height=28, command=lambda _: self.atualizar_tabela())
@@ -290,8 +290,8 @@ class OrganizadorFinanceiro(ctk.CTk):
             ctk.CTkLabel(it, text=f"{l}: R$ {v:,.2f}", font=("Arial", 13, "bold")).pack(side="left")
 
     def reset_filtros(self):
-        self.f_mes.set("Todos"); self.f_ano.set("Todos"); self.f_tipo.set("Todos"); self.f_cat.set("Todos")
-        self.atualizar_tabela()
+        self.f_mes.set("Todos"); self.f_ano.set("Todos"); self.f_tipo.set("Todos")
+        self.atualizar_categorias_filtro("Todos")
 
     def renderizar_cabecalho(self):
         cor_azul = ("#3B8ED0", "#1F6AA5")
@@ -330,8 +330,17 @@ class OrganizadorFinanceiro(ctk.CTk):
         if nome == "graficos": self.atualizar_graficos()
         if nome == "comparativo": self.atualizar_comparativo("l"); self.atualizar_comparativo("r")
         self.telas[nome].pack(expand=True, fill="both")
-        for n, b in zip(["lancamentos", "visualizacao", "graficos", "comparativo"], [self.btn_lancamentos, self.btn_visual_sidebar, self.btn_graficos, self.btn_comparativo]):
+        for n, b in zip(["lancamentos", "visualizacao", "graficos", "comparativo"], [self.btn_lancamentos, self.btn_visualizacao, self.btn_graficos, self.btn_comparativo]):
             b.configure(fg_color=("gray75", "gray25") if n == nome else "transparent")
+
+    def atualizar_categorias_filtro(self, tipo):
+        if tipo == "Todos":
+            novas = ["Todos"] + self.todas_categorias
+        else:
+            novas = ["Todos"] + self.categorias_opcoes[tipo]
+        self.f_cat.configure(values=novas)
+        self.f_cat.set("Todos")
+        self.atualizar_tabela()
 
     def atualizar_categorias_form(self, tipo):
         novas = self.categorias_opcoes[tipo]
