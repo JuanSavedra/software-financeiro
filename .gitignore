@@ -1,0 +1,43 @@
+# ==========================================
+# Ambientes Virtuais (Virtual Environments)
+# ==========================================
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================================
+# Arquivos de Dados (MUITO IMPORTANTE)
+# ==========================================
+# Ignora todos os arquivos CSV para não vazar seus dados financeiros
+*.csv
+*.xlsx
+*.json
+
+# ==========================================
+# Python Cache e Arquivos Compilados
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ==========================================
+# Build e Executáveis (PyInstaller / auto-py-to-exe)
+# ==========================================
+build/
+dist/
+*.spec
+*.exe
+
+# ==========================================
+# IDEs e Editores
+# ==========================================
+.vscode/
+.idea/
+
+# ==========================================
+# Arquivos de Sistema Operacional
+# ==========================================
+.DS_Store
+Thumbs.db
