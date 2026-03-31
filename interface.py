@@ -3,6 +3,8 @@ import os
 from tkinter import filedialog, messagebox
 import datetime
 import sys
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from banco_de_dados import criar_csv_vazio, salvar_registro_csv, ler_registros_csv
 
 class OrganizadorFinanceiro(ctk.CTk):
@@ -63,16 +65,16 @@ class OrganizadorFinanceiro(ctk.CTk):
 
         self.construir_formulario()
         self.construir_visualizacao()
-        self.construir_telas_vazias()
+        self.construir_graficos()
+        self.construir_comparativo()
 
     def criar_botao_sidebar(self, texto, comando):
         btn = ctk.CTkButton(self.sidebar_frame, text=texto, anchor="w", height=45, fg_color="transparent", hover_color=("gray70", "gray30"), text_color=("gray10", "gray90"), command=comando)
         btn.pack(fill="x", padx=10, pady=5)
         return btn
 
-    def construir_telas_vazias(self):
-        for nome in ["graficos", "comparativo"]:
-            ctk.CTkLabel(self.telas[nome], text=f"Tela de {nome.capitalize()}\n(Em desenvolvimento)", font=("Arial", 24, "bold"), text_color="gray").pack(expand=True)
+    def construir_comparativo(self):
+        ctk.CTkLabel(self.telas["comparativo"], text="Tela de Comparativo\n(Em desenvolvimento)", font=("Arial", 24, "bold"), text_color="gray").pack(expand=True)
 
     def construir_formulario(self):
         frame = self.telas["lancamentos"]
@@ -105,13 +107,10 @@ class OrganizadorFinanceiro(ctk.CTk):
 
     def construir_visualizacao(self):
         frame = self.telas["visualizacao"]
-        
-        # --- ÁREA DE FILTROS ---
         self.filter_frame = ctk.CTkFrame(frame)
         self.filter_frame.pack(pady=(20, 10), padx=100, fill="x")
         self.filter_frame.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
 
-        # Linha 1: Mês, Ano, Tipo, Categoria
         ctk.CTkLabel(self.filter_frame, text="Mês:", font=("Arial", 11, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
         self.f_mes = ctk.CTkComboBox(self.filter_frame, values=["Todos"] + [f"{i:02d}" for i in range(1, 13)], width=80, height=28, command=lambda _: self.atualizar_tabela())
         self.f_mes.set("Todos"); self.f_mes.grid(row=0, column=1, padx=5, pady=5, sticky="w")
@@ -128,20 +127,94 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.f_cat = ctk.CTkComboBox(self.filter_frame, values=["Todos"] + self.todas_categorias, width=140, height=28, command=lambda _: self.atualizar_tabela())
         self.f_cat.set("Todos"); self.f_cat.grid(row=0, column=7, padx=5, pady=5, sticky="w")
 
-        # Linha 2: Botão Reset ocupando a linha inteira
         self.btn_reset = ctk.CTkButton(self.filter_frame, text="Limpar Todos os Filtros", height=32, fg_color="gray30", hover_color="gray40", command=self.reset_filtros)
         self.btn_reset.grid(row=1, column=0, columnspan=8, padx=10, pady=(5, 10), sticky="ew")
 
-        # --- TABELA ---
         self.tabela_frame = ctk.CTkScrollableFrame(frame, height=400)
         self.tabela_frame.pack(expand=True, fill="both", padx=100, pady=10)
         self.tabela_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        # --- RODAPÉ DE SALDO ---
         self.footer_frame = ctk.CTkFrame(frame, height=60, fg_color="transparent")
         self.footer_frame.pack(fill="x", padx=100, pady=(0, 20))
         self.label_saldo = ctk.CTkLabel(self.footer_frame, text="SALDO DO PERÍODO: R$ 0,00", font=("Arial", 20, "bold"))
         self.label_saldo.pack(side="right", padx=10)
+
+    def construir_graficos(self):
+        frame = self.telas["graficos"]
+        
+        # Área de Filtros (Igual à Visualização)
+        self.filter_frame_graf = ctk.CTkFrame(frame)
+        self.filter_frame_graf.pack(pady=(20, 10), padx=100, fill="x")
+        self.filter_frame_graf.grid_columnconfigure((0,1,2,3), weight=1)
+
+        ctk.CTkLabel(self.filter_frame_graf, text="Mês:", font=("Arial", 12, "bold")).grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        self.g_mes = ctk.CTkComboBox(self.filter_frame_graf, values=["Todos"] + [f"{i:02d}" for i in range(1, 13)], width=100, command=lambda _: self.atualizar_graficos())
+        self.g_mes.set("Todos"); self.g_mes.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+        ctk.CTkLabel(self.filter_frame_graf, text="Ano:", font=("Arial", 12, "bold")).grid(row=0, column=2, padx=10, pady=10, sticky="e")
+        self.g_ano = ctk.CTkComboBox(self.filter_frame_graf, values=["Todos"] + [str(a) for a in range(2020, 2031)], width=110, command=lambda _: self.atualizar_graficos())
+        self.g_ano.set("Todos"); self.g_ano.grid(row=0, column=3, padx=10, pady=10, sticky="w")
+
+        # Container para o gráfico
+        self.canvas_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        self.canvas_frame.pack(expand=True, fill="both", padx=100, pady=10)
+
+    def atualizar_graficos(self):
+        # Limpa o canvas e legendas anteriores
+        for widget in self.canvas_frame.winfo_children():
+            widget.destroy()
+
+        df = ler_registros_csv(self.caminho_arquivo_csv)
+        if df.empty:
+            ctk.CTkLabel(self.canvas_frame, text="Nenhum dado disponível para gerar gráficos.", font=("Arial", 16)).pack(expand=True)
+            return
+
+        # Aplicar Filtros
+        if self.g_mes.get() != "Todos":
+            df = df[df['Data'].str.split('/').str[1] == self.g_mes.get()]
+        if self.g_ano.get() != "Todos":
+            df = df[df['Data'].str.split('/').str[2] == self.g_ano.get()]
+
+        if df.empty:
+            ctk.CTkLabel(self.canvas_frame, text="Nenhum dado encontrado para o período selecionado.", font=("Arial", 16)).pack(expand=True)
+            return
+
+        # Agrupar por Tipo
+        resumo = df.groupby('Tipo')['Valor'].sum()
+        labels = resumo.index.tolist()
+        valores = resumo.values.tolist()
+        
+        # Cores correspondentes ao sistema
+        mapa_cores = {"Gasto": "#ff6b6b", "Ganho": "#51cf66", "Investimento": "#5c7cff"}
+        cores = [mapa_cores[l] for l in labels]
+
+        # Criar a figura do Matplotlib
+        fig, ax = plt.subplots(figsize=(5, 5), facecolor='none')
+        ax.pie(valores, autopct='%1.1f%%', startangle=140, colors=cores, 
+               textprops={'color': "white", 'weight': 'bold', 'fontsize': 12}, 
+               wedgeprops={'edgecolor': 'none'}) 
+        
+        ax.set_title("Distribuição de Valores", color="white", fontdict={'fontsize': 18, 'weight': 'bold'}, pad=20)
+
+        # Renderizar no Tkinter
+        canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(expand=True)
+        plt.close(fig)
+
+        # --- LEGENDA CUSTOMIZADA (Quadrados, Texto e Valor Total) ---
+        legend_frame = ctk.CTkFrame(self.canvas_frame, fg_color="transparent")
+        legend_frame.pack(pady=(0, 20))
+
+        for l, c, v in zip(labels, cores, valores):
+            item_frame = ctk.CTkFrame(legend_frame, fg_color="transparent")
+            item_frame.pack(side="left", padx=20)
+
+            # Quadrado colorido
+            ctk.CTkFrame(item_frame, width=15, height=15, fg_color=c, corner_radius=2).pack(side="left", padx=5)
+            
+            # Texto identificador e Valor Total
+            ctk.CTkLabel(item_frame, text=f"{l}: R$ {v:,.2f}", font=("Arial", 13, "bold")).pack(side="left")
 
     def reset_filtros(self):
         self.f_mes.set("Todos"); self.f_ano.set("Todos"); self.f_tipo.set("Todos"); self.f_cat.set("Todos")
@@ -158,13 +231,10 @@ class OrganizadorFinanceiro(ctk.CTk):
     def atualizar_tabela(self):
         for widget in self.tabela_frame.winfo_children(): widget.destroy()
         self.renderizar_cabecalho()
-        
         df = ler_registros_csv(self.caminho_arquivo_csv)
         if df.empty: 
             self.label_saldo.configure(text="SALDO DO PERÍODO: R$ 0,00", text_color="gray")
             return
-
-        # Aplicar Filtros
         if self.f_mes.get() != "Todos":
             df = df[df['Data'].str.split('/').str[1] == self.f_mes.get()]
         if self.f_ano.get() != "Todos":
@@ -174,25 +244,23 @@ class OrganizadorFinanceiro(ctk.CTk):
         if self.f_cat.get() != "Todos":
             df = df[df['Categoria'] == self.f_cat.get()]
         
-        # Renderizar e Calcular Saldo
         saldo = 0
         for i, row in df.reset_index().iterrows():
             cor_tipo = "#ff6b6b" if row['Tipo'] == "Gasto" else "#51cf66" if row['Tipo'] == "Ganho" else "#5c7cff"
             valor = float(row['Valor'])
             if row['Tipo'] == "Ganho": saldo += valor
             else: saldo -= valor
-
             ctk.CTkLabel(self.tabela_frame, text=row['Data'], height=40).grid(row=i+1, column=0, padx=1, pady=1, sticky="nsew")
             ctk.CTkLabel(self.tabela_frame, text=row['Tipo'].upper(), text_color=cor_tipo, font=("Arial", 11, "bold"), height=40).grid(row=i+1, column=1, padx=1, pady=1, sticky="nsew")
             ctk.CTkLabel(self.tabela_frame, text=row['Categoria'], anchor="center", height=40).grid(row=i+1, column=2, padx=1, pady=1, sticky="nsew")
             ctk.CTkLabel(self.tabela_frame, text=f"R$ {valor:,.2f}", anchor="center", font=("Arial", 12, "bold"), height=40).grid(row=i+1, column=3, padx=1, pady=1, sticky="nsew")
-
         cor_saldo = "#51cf66" if saldo >= 0 else "#ff6b6b"
         self.label_saldo.configure(text=f"SALDO DO PERÍODO: R$ {saldo:,.2f}", text_color=cor_saldo)
 
     def mudar_tela(self, nome):
         for f in self.telas.values(): f.pack_forget()
         if nome == "visualizacao": self.atualizar_tabela()
+        if nome == "graficos": self.atualizar_graficos()
         self.telas[nome].pack(expand=True, fill="both")
         for n, b in zip(["lancamentos", "visualizacao", "graficos", "comparativo"], [self.btn_lancamentos, self.btn_visualizacao, self.btn_graficos, self.btn_comparativo]):
             b.configure(fg_color=("gray75", "gray25") if n == nome else "transparent")
