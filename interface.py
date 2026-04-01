@@ -7,6 +7,14 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from banco_de_dados import criar_csv_vazio, salvar_registro_csv, ler_registros_csv
 
+def resource_path(relative_path):
+    """ Retorna o caminho absoluto para o recurso, compatível com PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class OrganizadorFinanceiro(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -23,7 +31,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         
         # Configuração do Tema
         ctk.set_appearance_mode("System")
-        ctk.set_default_color_theme("pink_theme.json")
+        ctk.set_default_color_theme(resource_path("pink_theme.json"))
 
         # Categorias
         self.categorias_opcoes = {
