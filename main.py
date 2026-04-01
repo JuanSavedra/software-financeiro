@@ -5,8 +5,8 @@ from interface import OrganizadorFinanceiro
 # Pode ser "System" (segue o Windows), "Dark" ou "Light"
 ctk.set_appearance_mode("System") 
 
-# Pode ser "blue" (padrão), "green" ou "dark-blue"
-ctk.set_default_color_theme("blue") 
+# Pode ser "pink_theme.json", "blue" (padrão), "green" ou "dark-blue"
+ctk.set_default_color_theme("pink_theme.json") 
 
 if __name__ == "__main__":
     # Instancia a interface criada no outro arquivo

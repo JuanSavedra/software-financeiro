@@ -23,7 +23,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         
         # Configuração do Tema
         ctk.set_appearance_mode("System")
-        ctk.set_default_color_theme("blue")
+        ctk.set_default_color_theme("pink_theme.json")
 
         # Categorias
         self.categorias_opcoes = {
@@ -55,8 +55,8 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.btn_comparativo = self.criar_botao_sidebar("Comparativo", lambda: self.mudar_tela("comparativo"))
 
         self.btn_config = ctk.CTkButton(self.sidebar_frame, text="Substituir Arquivo", 
-                                        fg_color=("#3B8ED0", "#1F6AA5"), 
-                                        hover_color=("#3279B0", "#185382"), 
+                                        fg_color=("#FF69B4", "#C71585"), 
+                                        hover_color=("#FF1493", "#8B008B"), 
                                         command=self.voltar_tela_inicial)
         self.btn_config.pack(side="bottom", pady=20, padx=20, fill="x")
 
@@ -75,7 +75,10 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.construir_comparativo()
 
     def criar_botao_sidebar(self, texto, comando):
-        btn = ctk.CTkButton(self.sidebar_frame, text=texto, anchor="w", height=45, fg_color="transparent", hover_color=("gray70", "gray30"), text_color=("gray10", "gray90"), command=comando)
+        btn = ctk.CTkButton(self.sidebar_frame, text=texto, anchor="w", height=45, fg_color="transparent", 
+                            hover_color=("#F8D7E4", "#3D3D3D"), 
+                            text_color=("#C71585", "#FFB6C1"), 
+                            command=comando)
         btn.pack(fill="x", padx=10, pady=5)
         return btn
 
@@ -165,7 +168,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         for t in resumo.index: self.totais_comp[lado][t] = resumo[t]
 
         labels, valores = resumo.index.tolist(), resumo.values.tolist()
-        mapa_cores = {"Gasto": "#ff6b6b", "Ganho": "#51cf66", "Investimento": "#5c7cff"}
+        mapa_cores = {"Gasto": "#ff6b6b", "Ganho": "#51cf66", "Investimento": "#FF69B4"}
         cores = [mapa_cores[l] for l in labels]
 
         fig, ax = plt.subplots(figsize=(3.5, 3.5), facecolor='none')
@@ -239,7 +242,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         ctk.CTkLabel(self.filter_frame, text="Categoria:", font=("Arial", 11, "bold")).grid(row=0, column=6, padx=5, pady=5, sticky="e")
         self.f_cat = ctk.CTkComboBox(self.filter_frame, values=["Todos"] + self.todas_categorias, width=140, height=28, command=lambda _: self.atualizar_tabela())
         self.f_cat.set("Todos"); self.f_cat.grid(row=0, column=7, padx=5, pady=5, sticky="w")
-        ctk.CTkButton(self.filter_frame, text="Limpar Todos os Filtros", height=32, fg_color="gray30", hover_color="gray40", command=self.reset_filtros).grid(row=1, column=0, columnspan=8, padx=10, pady=(5, 10), sticky="ew")
+        ctk.CTkButton(self.filter_frame, text="Limpar Todos os Filtros", height=32, fg_color=("#FFB6C1", "#3E3E3E"), hover_color=("#FF69B4", "#C71585"), text_color=("#C71585", "#FFFFFF"), command=self.reset_filtros).grid(row=1, column=0, columnspan=8, padx=10, pady=(5, 10), sticky="ew")
         self.tabela_frame = ctk.CTkScrollableFrame(frame, height=400)
         self.tabela_frame.pack(expand=True, fill="both", padx=100, pady=10)
         self.tabela_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
@@ -273,7 +276,7 @@ class OrganizadorFinanceiro(ctk.CTk):
             ctk.CTkLabel(self.canvas_frame, text="Nenhum dado encontrado.", font=("Arial", 16)).pack(expand=True); return
         resumo = df.groupby('Tipo')['Valor'].sum()
         labels, valores = resumo.index.tolist(), resumo.values.tolist()
-        mapa_cores = {"Gasto": "#ff6b6b", "Ganho": "#51cf66", "Investimento": "#5c7cff"}
+        mapa_cores = {"Gasto": "#ff6b6b", "Ganho": "#51cf66", "Investimento": "#FF69B4"}
         cores = [mapa_cores[l] for l in labels]
         fig, ax = plt.subplots(figsize=(5, 5), facecolor='none')
         ax.pie(valores, autopct='%1.1f%%', startangle=140, colors=cores, 
@@ -294,8 +297,8 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.atualizar_categorias_filtro("Todos")
 
     def renderizar_cabecalho(self):
-        cor_azul = ("#3B8ED0", "#1F6AA5")
-        estilo = {"font": ("Arial", 13, "bold"), "height": 45, "text_color": "white", "fg_color": cor_azul}
+        cor_rosa = ("#FF69B4", "#C71585")
+        estilo = {"font": ("Arial", 13, "bold"), "height": 45, "text_color": "white", "fg_color": cor_rosa}
         ctk.CTkLabel(self.tabela_frame, text="DATA", **estilo).grid(row=0, column=0, padx=1, pady=(0, 2), sticky="nsew")
         ctk.CTkLabel(self.tabela_frame, text="TIPO", **estilo).grid(row=0, column=1, padx=1, pady=(0, 2), sticky="nsew")
         ctk.CTkLabel(self.tabela_frame, text="CATEGORIA", **estilo).grid(row=0, column=2, padx=1, pady=(0, 2), sticky="nsew")
@@ -313,7 +316,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         if self.f_cat.get() != "Todos": df = df[df['Categoria'] == self.f_cat.get()]
         saldo = 0
         for i, row in df.reset_index().iterrows():
-            cor_tipo = "#ff6b6b" if row['Tipo'] == "Gasto" else "#51cf66" if row['Tipo'] == "Ganho" else "#5c7cff"
+            cor_tipo = "#ff6b6b" if row['Tipo'] == "Gasto" else "#51cf66" if row['Tipo'] == "Ganho" else "#FF69B4"
             valor = float(row['Valor'])
             if row['Tipo'] == "Ganho": saldo += valor
             else: saldo -= valor
@@ -331,7 +334,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         if nome == "comparativo": self.atualizar_comparativo("l"); self.atualizar_comparativo("r")
         self.telas[nome].pack(expand=True, fill="both")
         for n, b in zip(["lancamentos", "visualizacao", "graficos", "comparativo"], [self.btn_lancamentos, self.btn_visualizacao, self.btn_graficos, self.btn_comparativo]):
-            b.configure(fg_color=("gray75", "gray25") if n == nome else "transparent")
+            b.configure(fg_color=("#FFB6C1", "#C71585") if n == nome else "transparent")
 
     def atualizar_categorias_filtro(self, tipo):
         if tipo == "Todos":
