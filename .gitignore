@@ -12,7 +12,6 @@ ENV/
 # Ignora todos os arquivos CSV para não vazar seus dados financeiros
 *.csv
 *.xlsx
-*.json
 
 # ==========================================
 # Python Cache e Arquivos Compilados
