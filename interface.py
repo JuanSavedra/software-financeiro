@@ -54,7 +54,7 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.btn_graficos = self.criar_botao_sidebar("Gráficos", lambda: self.mudar_tela("graficos"))
         self.btn_comparativo = self.criar_botao_sidebar("Comparativo", lambda: self.mudar_tela("comparativo"))
 
-        self.btn_config = ctk.CTkButton(self.sidebar_frame, text="⚙️ Configurações", 
+        self.btn_config = ctk.CTkButton(self.sidebar_frame, text="Substituir Arquivo", 
                                         fg_color=("#3B8ED0", "#1F6AA5"), 
                                         hover_color=("#3279B0", "#185382"), 
                                         command=self.voltar_tela_inicial)
