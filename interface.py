@@ -75,9 +75,12 @@ class OrganizadorFinanceiro(ctk.CTk):
         self.btn_graficos = self.criar_botao_sidebar("Gráficos", lambda: self.mudar_tela("graficos"))
         self.btn_comparativo = self.criar_botao_sidebar("Comparativo", lambda: self.mudar_tela("comparativo"))
 
-        # Botão de Tema
-        self.btn_tema = ctk.CTkButton(self.sidebar_frame, text="Tema", command=self.alternar_tema)
-        self.btn_tema.pack(side="bottom", pady=(10, 20), padx=20, fill="x")
+        # Dropdown de Tema (Substituindo o botão antigo)
+        ctk.CTkLabel(self.sidebar_frame, text="Tema:", font=("Arial", 12, "bold")).pack(side="bottom", padx=20, pady=(10, 0), anchor="w")
+        self.combo_tema = ctk.CTkComboBox(self.sidebar_frame, values=["Rosa", "Azul"], command=self.mudar_tema_dropdown)
+        self.combo_tema.set("Rosa")
+        self.combo_tema.pack(side="bottom", pady=(5, 20), padx=20, fill="x")
+        self.lista_dropdowns.append(self.combo_tema)
 
         # Botão Substituir Arquivo
         self.btn_config = ctk.CTkButton(self.sidebar_frame, text="Substituir Arquivo", command=self.voltar_tela_inicial)
@@ -133,7 +136,6 @@ class OrganizadorFinanceiro(ctk.CTk):
 
         # 2. Sidebar e Logo
         self.btn_config.configure(fg_color=cor_base, hover_color=cor_hover)
-        self.btn_tema.configure(fg_color=cor_base, hover_color=cor_hover)
         self.lbl_logo.configure(text_color=cor_titulo)
         for btn in [self.btn_lancamentos, self.btn_visualizacao, self.btn_graficos, self.btn_comparativo]:
             btn.configure(text_color=cor_texto_side, hover_color=cor_hover_side)
@@ -169,16 +171,21 @@ class OrganizadorFinanceiro(ctk.CTk):
             if frame.winfo_ismapped():
                 self.mudar_tela(nome)
 
-    def alternar_tema(self):
-        self.tema_atual = "blue" if self.tema_atual == "rosa" else "rosa"
-        ctk.set_default_color_theme(resource_path(f"{self.tema_atual}_theme.json"))
+    def mudar_tema_dropdown(self, escolha):
+        if escolha == "Rosa":
+            self.tema_atual = "rosa"
+            ctk.set_default_color_theme(resource_path("pink_theme.json"))
+        else:
+            self.tema_atual = "blue"
+            ctk.set_default_color_theme(resource_path("blue_theme.json"))
+        
         self.atualizar_estilo_botoes()
         if self.caminho_arquivo_csv:
             self.atualizar_tabela()
             self.atualizar_graficos()
             self.atualizar_comparativo("l")
             self.atualizar_comparativo("r")
-        messagebox.showinfo("Tema Alterado", "O tema foi aplicado.")
+        messagebox.showinfo("Tema Alterado", f"O tema {escolha} foi aplicado.")
 
     def criar_botao_sidebar(self, texto, comando):
         btn = ctk.CTkButton(self.sidebar_frame, text=texto, anchor="w", height=45, fg_color="transparent", command=comando)
